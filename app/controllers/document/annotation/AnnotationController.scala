@@ -26,7 +26,7 @@ class AnnotationController @Inject() (implicit val cache: CacheApi, val db: DB, 
       if (accesslevel.canRead)
         renderResponse(maybeUser, document, fileparts, selectedPart, accesslevel)
       else
-        authenticationFailed(request)        
+        authenticationFailed(request)
     })
   }
 
@@ -38,13 +38,13 @@ class AnnotationController @Inject() (implicit val cache: CacheApi, val db: DB, 
       case Some(ContentType.IMAGE_UPLOAD) =>
         Future.successful(Ok(views.html.document.annotation.image(loggedInUser, document, parts, thisPart, accesslevel)))
 
-      case Some(ContentType.TEXT_PLAIN) => {
+      case Some(ContentType.TEXT_PLAIN | ContentType.TEXT_TEIXML) => {
         readTextfile(document.getOwner, document.getId, thisPart.getFilename) match {
           case Some(content) => {
             AnnotationService.countByDocId(document.getId).map(documentAnnotationCount =>
               Ok(views.html.document.annotation.text(loggedInUser, document, parts, thisPart, documentAnnotationCount, accesslevel, content)))
           }
-          
+
           case None => {
             // Filepart found in DB, but not file on filesystem
             Logger.error("Filepart recorded in the DB is missing on the filesystem: " + document.getOwner + ", " + document.getId)
@@ -57,5 +57,5 @@ class AnnotationController @Inject() (implicit val cache: CacheApi, val db: DB, 
         // Unknown content type in DB, or content type we don't have an annotation view for - should never happen
         Future.successful(InternalServerError)
     }
-  
+
 }

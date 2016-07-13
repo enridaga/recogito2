@@ -8,17 +8,17 @@ import scala.language.postfixOps
 import sys.process._
 
 sealed trait ContentType {
-  
+
   val media: String
-  
+
   val subtype: String
-  
+
   lazy val name = media + "_" + subtype
-  
+
 }
 
 object ContentType {
-  
+
   case object TEXT_PLAIN    extends ContentType { val media = "TEXT"  ; val subtype = "PLAIN" }
   case object TEXT_TEIXML   extends ContentType { val media = "TEXT"  ; val subtype = "TEIXML" }
   case object TEXT_MARKDOWN extends ContentType { val media = "TEXT"  ; val subtype = "MARKDOWN" }
@@ -35,13 +35,13 @@ object ContentType {
     IMAGE_UPLOAD,
     IMAGE_IIIF,
     DATA_CSV).find(_.name == name)
-  
+
   // Images are only supported if VIPS is installed on the system
   private val VIPS_INSTALLED = {
     val testVips = Try("vips help" !)
     if (testVips.isFailure)
       Logger.warn("VIPS not installed - image support disabled")
-      
+
     testVips.isSuccess
   }
 
@@ -52,6 +52,9 @@ object ContentType {
       case "txt" =>
         Right(TEXT_PLAIN)
 
+      case "xml" =>
+        Right(TEXT_TEIXML)
+
       case "jpg" | "tif" | "png" =>
         if (VIPS_INSTALLED) Right(IMAGE_UPLOAD) else Left(UnsupportedContentType)
 
@@ -60,13 +63,13 @@ object ContentType {
     }
 
   }
-  
+
 }
 
 object ContentIdentificationFailures {
-  
+
   sealed trait ContentIdentificationFailure
-  
+
   case object UnsupportedContentType extends ContentIdentificationFailure
-    
+
 }
