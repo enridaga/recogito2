@@ -184,17 +184,17 @@ define(['common/utils/annotationUtils'], function(AnnotationUtils) {
                 range = rangy.createRange(),
                 positions, spans;
 
-            if (previousBounds && intersects(previousBounds, bounds)) {
+            // if (previousBounds && intersects(previousBounds, bounds)) {
               positions = charOffsetsToDOMPosition([ bounds.start, bounds.end ]);
               range.setStart(positions[0].node, positions[0].offset);
               range.setEnd(positions[1].node, positions[1].offset);
               spans = wrapRange(range);
-            } else {
+            /* } else {
               // Fast rendering through Rangy's API
               setNonOverlappingRange(range, anchor, quote.length);
               classApplier.applyToRange(range);
               spans = [ range.getNodes()[0].parentElement ];
-            }
+            }*/
 
             // Attach annotation data as payload to the SPANs and set id, if any
             updateStyles(annotation, spans);

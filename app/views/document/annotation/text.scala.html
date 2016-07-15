@@ -23,9 +23,6 @@
     <meta name="twitter:image" content="@routes.Assets.versioned("images/logo_sq_240px.png").absoluteURL" />
     <meta property="og:url" content="@controllers.document.annotation.routes.AnnotationController.showAnnotationViewForDoc(document.getId).absoluteURL" /> }
     <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/document/annotation/text/index.css")"/>
-
-      <link rel="stylesheet" href="@routes.Assets.versioned("javascripts/CETEIcean.css")"/>
-
     <link rel="stylesheet" id="colorscheme" href="@routes.Assets.versioned("stylesheets/document/annotation/text/colorByType.css")"/>
     <link rel="stylesheet" href="@routes.WebJarAssets.at(webjars.locate("leaflet.css"))"/>
     <script src="@routes.WebJarAssets.at(webjars.locate("leaflet.js"))"></script>
@@ -185,12 +182,12 @@
     )
 
     @if(currentPart.getContentType == models.ContentType.TEXT_TEIXML.toString) {
+      <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/document/annotation/text/tei.css")"/>
       <script src="@routes.Assets.versioned("javascripts/cetei.20160713.js")"></script>
       <script type="text/javascript">
         var CETEIcean = new CETEI();
         var xml = '@Html(content.replace("\n","").replace("'", "\\\'"))';
         CETEIcean.makeHTML5(xml, function(data) {
-          console.log(data);
           document.getElementById("content").appendChild(data);
         });
      </script>

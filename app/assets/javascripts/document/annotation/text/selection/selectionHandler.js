@@ -1,4 +1,4 @@
-define(['common/config', 'common/hasEvents'], function(Config, HasEvents) {
+define(['common/config', 'common/hasEvents', 'common/utils/xpathUtils'], function(Config, HasEvents, XPathUtils) {
 
   var SelectionHandler = function(rootNode, highlighter) {
 
@@ -37,6 +37,10 @@ define(['common/config', 'common/hasEvents'], function(Config, HasEvents) {
           // A helper range from the start of the contentNode to the start of the selection
           rangeBefore.setStart(rootNode, 0);
           rangeBefore.setEnd(selectedRange.startContainer, selectedRange.startOffset);
+
+          // console.log('###');
+          // console.log(new XMLSerializer().serializeToString(selectedRange.nativeRange.startContainer));
+          // console.log(XPathUtils.getXPath(selectedRange.nativeRange.startContainer).join('/'));
 
           return {
             annotates: {
@@ -96,6 +100,8 @@ define(['common/config', 'common/hasEvents'], function(Config, HasEvents) {
              jQuery.each(spans, function(idx, span) { span.className = 'selection'; });
 
              clearNativeSelection();
+
+             console.log(annotation);
 
              currentSelection = { annotation: annotation, bounds: bounds, spans: spans };
              self.fireEvent('select', currentSelection);

@@ -1,25 +1,26 @@
-/* general styles */
+/* Modified version of https://github.com/TEIC/CETEIcean */
 
 tei-TEI {
-color: #000000;
-font-family: Verdana, Tahoma, Geneva, Arial, Helvetica, sans-serif;
-font-size: 0.8em;
-line-height: 1.6em;
+  white-space:normal;
 }
+
 tei-teiHeader {
   display: block;
 }
-tei-teiHeader tei-titleStmt>tei-title {
-  display: block;
-  font-size: 16pt;
-  font-weight: bold;
-  color: #00487D;
-  background-color: #FFFFFF;
-  margin-bottom: .5em;
+
+tei-teiHeader tei-titleStmt > tei-title {
+  margin:0;
+  padding:0 0 10px 0;
+  display:block;
+  font-size:16pt;
+  font-weight:bold;
 }
-tei-fileDesc>tei-titleStmt {
-  font-size: 11pt;
+
+tei-fileDesc > tei-titleStmt {
+  font-size:11pt;
+  display:block;
 }
+
 tei-fileDesc>tei-titleStmt>tei-author:after {
   content: ', ';
 }
@@ -28,7 +29,7 @@ tei-fileDesc>tei-titleStmt>tei-author:last-child:after {
 }
 tei-fileDesc>tei-publicationStmt {
   display: block;
-  font-size: 11pt;
+  font-size:11pt;
 }
 tei-teiHeader tei-sourceDesc {
   display: none;
@@ -38,7 +39,8 @@ tei-teiHeader>tei-revisionDesc {
 }
 tei-body {
   display: block;
-  margin: 1em;
+  font-size:17px;
+  line-height:170%;
 }
 tei-div {
   display: block;
@@ -49,8 +51,6 @@ tei-div {
 tei-div>tei-head {
   font-size: 11pt;
   font-weight: bold;
-  color: #00487D;
-  background-color: #FFFFFF;
 }
 tei-p {
   display:block;
