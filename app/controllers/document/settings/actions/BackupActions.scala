@@ -107,6 +107,8 @@ trait BackupActions extends HasAdminAction with FileAccess with HasDate { self: 
     writer.flush()
     writer.close()
     
+    // tmp.finalize()
+    
     new FileInputStream(tmp.file)
   }
   
@@ -126,6 +128,9 @@ trait BackupActions extends HasAdminAction with FileAccess with HasDate { self: 
         AnnotationService.findByDocId(documentId).map { annotations =>
           addToZip(exportAnnotations(documentId, annotations.map(_._1), parts), "annotations.jsonl", zipStream)
           zipStream.close()
+          
+          zipFile.finalize()
+          
           Ok.sendFile(zipFile.file) 
         }
       }

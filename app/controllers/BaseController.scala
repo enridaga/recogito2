@@ -3,6 +3,7 @@ package controllers
 import play.api.cache.CacheApi
 import play.api.mvc.{ AnyContent, Controller, Request }
 import storage.DB
+import controllers.document.annotation.ControllerContext
 
 /** Helper trait so we can hand the injected DB into other traits **/
 trait HasDatabase { def db: DB }
@@ -12,6 +13,8 @@ trait HasCache { def cache: CacheApi }
 
 /** Common Controller functionality for convenience **/
 abstract class BaseController extends Controller {
+  
+  implicit def controllerContextToCache(implicit ctx: ControllerContext): CacheApi = ctx.cache
   
   protected val NotFoundPage = NotFound(views.html.error404())
   

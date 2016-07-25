@@ -12,8 +12,20 @@ import play.api.Logger
 import play.api.mvc.RequestHeader
 import scala.concurrent.Future
 import storage.{ DB, FileAccess }
+import javax.inject.Provider
+import javax.inject.Singleton
 
-class AnnotationController @Inject() (implicit val cache: CacheApi, val db: DB, webjars: WebJarAssets) extends BaseOptAuthController with FileAccess {
+class ControllerContext(val cache: CacheApi, val db: DB, val webjars: WebJarAssets)
+
+@Singleton
+class ControllerContextProvider @Inject() (val cache: CacheApi, val db: DB, val webjars: WebJarAssets) extends Provider[ControllerContext] {
+  
+  def get = new ControllerContext(cache, db, webjars)  
+  
+}
+
+
+class AnnotationController @Inject() (implicit val ctx: ControllerContext) extends BaseOptAuthController with FileAccess {
 
   /** Just a redirect for convenience **/
   def showAnnotationViewForDoc(documentId: String) = StackAction { implicit request =>

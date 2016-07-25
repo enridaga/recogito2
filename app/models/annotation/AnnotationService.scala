@@ -51,19 +51,22 @@ object AnnotationService extends HasAnnotationIndexing with AnnotationHistorySer
         t.printStackTrace
         (false, -1l)
       }
-      
+
+    val queryPrevious = findById(annotation.annotationId)
+    val queryUpsert = upsertAnnotation(annotation)
+
     for {
       // Retrieve previous version, if any
-      maybePrevious       <- findById(annotation.annotationId)
-      
+      maybePrevious       <- queryPrevious
+
       // Store new version: 1) in the annotation index, 2) in the history index
-      (stored, esVersion) <- upsertAnnotation(annotation)
+      (stored, esVersion) <- queryUpsert
       storedToHistory     <- if (stored) insertVersion(annotation) else Future.successful(false)
-      
+
       // Upsert geotags for this annotation
       linksCreated        <- if (stored) insertOrUpdateGeoTagsForAnnotation(annotation) else Future.successful(false)
     } yield (linksCreated && storedToHistory, esVersion, maybePrevious.map(_._1))
-    
+
   }
 
   /** Upserts a list of annotations, handling non-blocking chaining & retries in case of failure **/
@@ -100,26 +103,40 @@ object AnnotationService extends HasAnnotationIndexing with AnnotationHistorySer
         None
       }
     }
-    
+
   private def deleteById(annotationId: String)(implicit context: ExecutionContext): Future[Boolean] =
     ES.client execute {
-      delete id annotationId.toString from ES.IDX_RECOGITO / ANNOTATION 
+      delete id annotationId.toString from ES.IDX_RECOGITO / ANNOTATION
     } map { _.isFound }
 
   /** Deletes the annotation with the given ID **/
-  def deleteAnnotation(annotationId: UUID, deletedBy: String, deletedAt: DateTime)(implicit context: ExecutionContext): Future[Option[Annotation]] =
+  def deleteAnnotation(annotationId: UUID, deletedBy: String, deletedAt: DateTime)(implicit context: ExecutionContext): Future[Option[Annotation]] = {
+    
+    import models.annotation.workshop.TransactionOperation._
+       
+    val NOP = () => Future.successful(())
+    
     findById(annotationId).flatMap(_ match {
       case Some((annotation, _)) => {
+   
+        val f = transaction (
+          op(() => insertDeleteMarker(annotation, deletedBy, deletedAt), NOP),
+          op(() => deleteById(annotationId.toString), NOP),
+          op(() => deleteGeoTagsByAnnotation(annotationId), NOP)
+        )
+
+        /*
         val f = for {
           markerInserted <- insertDeleteMarker(annotation, deletedBy, deletedAt)
           deleted        <- if (markerInserted) deleteById(annotationId.toString) else Future.successful(false)
           geotagsDeleted <- if (deleted) deleteGeoTagsByAnnotation(annotationId) else Future.successful(false)
         } yield geotagsDeleted
-      
+        */
+        
         f.map { success =>
           if (!success)
             throw new Exception("Error deleting annotation")
-          
+
           Some(annotation)
         }
       }
@@ -128,7 +145,8 @@ object AnnotationService extends HasAnnotationIndexing with AnnotationHistorySer
         // Annotation not found
         Future.successful(None)
     })
-        
+  }
+
   def countByDocId(id: String)(implicit context: ExecutionContext): Future[Long] =
     ES.client execute {
       count from ES.IDX_RECOGITO / ANNOTATION query nestedQuery("annotates").query(termQuery("annotates.document_id" -> id))
@@ -174,7 +192,7 @@ object AnnotationService extends HasAnnotationIndexing with AnnotationHistorySer
       } limit Int.MaxValue
     } map { _.as[(Annotation, Long)].toSeq.map(_._1) }
 
-  /** Rolls back the document to the state at the given timestamp **/ 
+  /** Rolls back the document to the state at the given timestamp **/
   def rollbackToTimestamp(documentId: String, timestamp: DateTime)(implicit context: ExecutionContext): Future[Boolean] = {
 
     // Rolls back one annotation, i.e. updates to the latest state recorded in the history or deletes
@@ -186,7 +204,7 @@ object AnnotationService extends HasAnnotationIndexing with AnnotationHistorySer
             Future.successful(true)
           else
             insertOrUpdateAnnotation(historyRecord.asAnnotation, false).map(_._1)
-          
+
         case None =>
           // The annotation did not exist at the rollback time - delete
           deleteById(annotationId)
@@ -213,9 +231,9 @@ object AnnotationService extends HasAnnotationIndexing with AnnotationHistorySer
         deleteHistoryRecordsAfter(documentId, timestamp)
       } else {
         Logger.warn(failed.size + " failed rollbacks")
-     
-        // TODO what would be a good recovery strategy?  
-        
+
+        // TODO what would be a good recovery strategy?
+
         Future.successful(false)
       }
     }
