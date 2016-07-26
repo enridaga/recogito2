@@ -10,6 +10,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 import java.util.regex.Pattern
+import com.vividsolutions.jts.geom.Coordinate
 
 trait ElasticSearchSanitizer {
   /** Sanitizes special characters and set operators in elastic search search-terms. */
@@ -67,13 +68,13 @@ object GeoresolutionService extends ProcessingService with ElasticSearchSanitize
   }
   
   def resolve(annotations: Seq[Annotation]): Future[Seq[Annotation]] =
-    resolveAndDisambiguate(annotations.map(a => (a, Option.empty[(Double, Double)])))
+    resolveAndDisambiguate(annotations.map(a => (a, Option.empty[Coordinate])))
    
-  def resolveAndDisambiguate(annotations: Seq[(Annotation, Option[(Double, Double)])]): Future[Seq[Annotation]] =    
-    annotations.foldLeft(Future.successful(Seq.empty[Annotation])) { case (future, (annotation, maybeCoord)) => 
+  def resolveAndDisambiguate(annotations: Seq[(Annotation, Option[Coordinate])]): Future[Seq[Annotation]] =    
+    annotations.foldLeft(Future.successful(Seq.empty[Annotation])) { case (future, (annotation, coord)) => 
       future.flatMap { annotations =>
         val fAnnotation = annotation.getQuote match {
-          case Some(quote) => PlaceService.searchPlaces(sanitize(quote), 0, 1).map { topHits =>
+          case Some(quote) => PlaceService.searchPlaces(sanitize(quote), 0, 1, coord).map { topHits =>
             if (topHits.total > 0)
               // TODO be smarter about choosing the right URI from the place
               appendPlaceBody(annotation, topHits.items(0)._1.id)

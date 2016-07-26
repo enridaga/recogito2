@@ -13,6 +13,7 @@ import models.ContentType
 import org.joda.time.DateTime
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import com.vividsolutions.jts.geom.Coordinate
 
 private[georesolution] class GeoresolutionWorkerActor(document: DocumentRecord, part: DocumentFilepartRecord, documentDir: File) extends Actor {
   
@@ -95,8 +96,8 @@ import controllers.my.upload.processing.tiling.TilingService;
         
 
       
-      val latLng = if (lat.isDefined && lng.isDefined) Some((lat.get, lng.get)) else None 
-      (annotation, latLng)
+      val coord = if (lat.isDefined && lng.isDefined) Some(new Coordinate(lng.get, lat.get)) else None 
+      (annotation, coord)
     }
   }
   
