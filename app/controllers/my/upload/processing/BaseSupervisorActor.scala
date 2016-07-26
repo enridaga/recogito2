@@ -1,4 +1,4 @@
-package controllers.my.upload
+package controllers.my.upload.processing
 
 import akka.actor.{ Actor, ActorRef }
 import akka.contrib.pattern.Aggregator
@@ -8,20 +8,20 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-case class TaskType(name: String)
+/** A base class that encapsulates common functionality needed by processing supervisor actors **/
 
-/** A base class that encapsulates most of the functionality needed by task supervisor actors **/
-abstract class BaseSupervisorActor(taskType: TaskType, document: DocumentRecord, parts: Seq[DocumentFilepartRecord],
+abstract class BaseSupervisorActor(serviceType: ServiceType, document: DocumentRecord, parts: Seq[DocumentFilepartRecord],
     documentDir: File, keepalive: FiniteDuration) extends Actor with Aggregator  {
   
   import ProcessingTaskMessages._
   
-  ProcessingTaskSupervisor.registerSupervisorActor(taskType, document.getId, self)
+  ProcessingTaskDirectory.registerSupervisorActor(serviceType, document.getId, self)
   
   private val workers = spawnWorkers(document, parts, documentDir)
 
   private var remainingWorkers = workers.size
   
+  /** Supervisor implementations must implement this method **/
   def spawnWorkers(document: DocumentRecord, parts: Seq[DocumentFilepartRecord], dir: File): Seq[ActorRef]
 
   expect {
@@ -74,7 +74,7 @@ abstract class BaseSupervisorActor(taskType: TaskType, document: DocumentRecord,
     def respondIfDone(force: Boolean = false) =
       if (!responseSent)
         if (force || responses.size == workers.size) {
-          origSender ! DocumentProgress(documentId, taskType, responses.toSeq)
+          origSender ! DocumentProgress(documentId, serviceType, responses.toSeq)
           responseSent = true
         }
   }
@@ -82,7 +82,7 @@ abstract class BaseSupervisorActor(taskType: TaskType, document: DocumentRecord,
   /** Waits for KEEPALIVE time, and then shuts down **/
   private def shutdown(keepalive: FiniteDuration) = {
     context.system.scheduler.scheduleOnce(keepalive) {
-      ProcessingTaskSupervisor.deregisterSupervisorActor(taskType, document.getId)
+      ProcessingTaskDirectory.deregisterSupervisorActor(serviceType, document.getId)
       workers.foreach(context.stop(_))
       context.stop(self)
     }

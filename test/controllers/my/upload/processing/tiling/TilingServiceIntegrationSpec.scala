@@ -1,8 +1,8 @@
-package controllers.my.upload.tiling
+package controllers.my.upload.processing.tiling
 
 import akka.actor.ActorSystem
 import akka.testkit.{ TestKit, ImplicitSender }
-import controllers.my.upload.ProgressStatus
+import controllers.my.upload.processing.ProgressStatus
 import java.io.File
 import java.util.UUID
 import java.sql.Timestamp
@@ -26,7 +26,7 @@ class TilingServiceIntegrationSpec extends TestKit(ActorSystem()) with ImplicitS
   // Force Specs2 to execute tests in sequential order
   sequential 
   
-  private val DEST_DIR = new File("test/resources/controllers/my/upload/tiling/Ptolemy_map_15th_century")
+  private val DEST_DIR = new File("test/resources/controllers/my/upload/processing/tiling/Ptolemy_map_15th_century")
   
   override def afterAll = FileUtils.deleteDirectory(DEST_DIR)
   
@@ -38,7 +38,7 @@ class TilingServiceIntegrationSpec extends TestKit(ActorSystem()) with ImplicitS
     
     val document = new DocumentRecord("hcylkmacy4xgkb", "rainer", new Timestamp(System.currentTimeMillis), "A test image", null, null, null, null, null, null, null, false)
     val parts = Seq(new DocumentFilepartRecord(UUID.randomUUID, "hcylkmacy4xgkb", "Ptolemy_map_15th_century.jpg", ContentType.IMAGE_UPLOAD.toString, "Ptolemy_map_15th_century.jpg", 0))
-    val dir = new File("test/resources/controllers/my/upload/tiling")
+    val dir = new File("test/resources/controllers/my/upload/processing/tiling")
     
     
     val processStartTime = System.currentTimeMillis

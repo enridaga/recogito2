@@ -8,12 +8,12 @@ require(['common/config'], function(Config) {
   jQuery(document).ready(function() {
     var btnNext = jQuery('input.next'),
 
-        nerPanel = jQuery('.ner'),
+        autoAnnotationPanel = jQuery('.auto-annotation-panel'),
 
-        nerCheckbox = jQuery('#apply-ner'),
+        autoAnnotationCheckbox = jQuery('#auto-annotation'),
 
         // State maintained independently, since we need to uncheck when hiding the panel!
-        nerCheckboxState = true,
+        autoAnnotationCheckboxState = true,
 
         /** Returns true if there are any text uploads in the list **/
         doUploadsIncludeText = function() {
@@ -38,12 +38,12 @@ require(['common/config'], function(Config) {
           return unfinishedUploads.length > 0;
         },
 
-        /** Refreshes the view, updating NER option visibility and NEXT button state **/
+        /** Refreshes the view, updating auto-annotation option visibility and NEXT button state **/
         refresh = function() {
           var uploadContainer = jQuery('#uploaded'),
               uploadsInList = jQuery('.dz-preview'),
               successfulUploadsInList = uploadsInList.not('.upload-failed'),
-              isNerPanelVisible = nerPanel.is(':visible'),
+              isAutoAnnotationPanelVisible = autoAnnotationPanel.is(':visible'),
               uploadsIncludeTexts = doUploadsIncludeText();
 
           // Hide the uploads container if empty (otherwise it would add CSS margin/padding) **/
@@ -58,17 +58,16 @@ require(['common/config'], function(Config) {
           else
             jQuery('input.next').prop('disabled', true);
 
-          // NER panel is visible only if >0 text uploads in list
-
-          if (!isNerPanelVisible && uploadsIncludeTexts) {
+          // Auto-annotation panel is visible only if >0 text uploads in list
+          if (!isAutoAnnotationPanelVisible && uploadsIncludeTexts) {
             // Hidden but needs to be visible: restore checkbox state and show
-            nerCheckbox.prop('checked', nerCheckboxState);
-            nerPanel.show();
-          } else if (isNerPanelVisible && !uploadsIncludeTexts) {
+            autoAnnotationCheckbox.prop('checked', autoAnnotationCheckboxState);
+            autoAnnotationPanel.show();
+          } else if (isAutoAnnotationPanelVisible && !uploadsIncludeTexts) {
             // Visible but needs to be hidden: store checkbox state, hide, uncheck
-            nerCheckboxState = nerCheckbox.prop('checked');
-            nerPanel.hide();
-            nerCheckbox.prop('checked', false);
+            autoAnnotationCheckboxState = autoAnnotationCheckbox.prop('checked');
+            autoAnnotationPanel.hide();
+            autoAnnotationCheckbox.prop('checked', false);
           }
         },
 

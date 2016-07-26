@@ -1,4 +1,4 @@
-package controllers.my.upload.georesolution
+package controllers.my.upload.processing.georesolution
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -8,7 +8,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import org.joda.time.DateTime
 
 // TODO extend with optional coordinates later
-case class Toponym(chars: String)
+case class Toponym(chars: String, anchor: String)
 
 object GeoresolutionService {
   
@@ -50,10 +50,10 @@ object GeoresolutionService {
           if (topHits.total > 0)
             // TODO be smarter about choosing the right URI from the place
             // TODO how to deal with anchors?
-            toAnnotation(annotatedObject, "", toponym.chars, Some(topHits.items(0)._1.id))
+            toAnnotation(annotatedObject, toponym.anchor, toponym.chars, Some(topHits.items(0)._1.id))
           else
             // No gazetteer match found
-            toAnnotation(annotatedObject, "",  toponym.chars)
+            toAnnotation(annotatedObject, toponym.anchor, toponym.chars)
         } map { annotation =>
           annotations :+ annotation
         }

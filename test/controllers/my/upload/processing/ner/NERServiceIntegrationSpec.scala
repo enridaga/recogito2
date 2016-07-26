@@ -1,7 +1,7 @@
-package controllers.my.upload.ner
+package controllers.my.upload.processing.ner
 
 import akka.actor.ActorSystem
-import akka.testkit.{ TestKit, ImplicitSender }
+import akka.testkit._
 import java.io.File
 import java.util.UUID
 import java.sql.Timestamp
@@ -44,7 +44,7 @@ class NERServiceIntegrationSpec extends TestKit(ActorSystem()) with ImplicitSend
     val parts1 = (1 to 5).map(n => new DocumentFilepartRecord(UUID.randomUUID, "hcylkmacy4xgkb", "text-for-ner-0" + n + ".txt", ContentType.TEXT_PLAIN.toString, "text-for-ner-0" + n + ".txt", 0))
     val parts2 = Seq(new DocumentFilepartRecord(UUID.randomUUID, "98muze1cl3saib", "text-for-ner-06.txt", ContentType.TEXT_PLAIN.toString, "text-for-ner-06.txt", 0))
       
-    val dir = new File("test/resources/controllers/my/upload/ner")
+    val dir = new File("test/resources/controllers/my/upload/processing/ner")
     
     Logger.info("[NERServiceIntegrationSpec] Submitting 2 documents to NER service")
       

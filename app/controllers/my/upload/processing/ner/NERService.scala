@@ -1,26 +1,25 @@
-package controllers.my.upload.ner
+package controllers.my.upload.processing.ner
 
 import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.pattern.ask
 import akka.util.Timeout
-import controllers.my.upload._
+import controllers.my.upload.processing._
 import edu.stanford.nlp.ling.CoreAnnotations
 import edu.stanford.nlp.pipeline.{ Annotation, StanfordCoreNLP }
 import java.io.File
 import java.util.Properties
+import models.ContentType
 import models.generated.tables.records.{ DocumentRecord, DocumentFilepartRecord }
 import play.api.Logger
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import storage.FileAccess
+import scala.reflect.ClassTag
 
 private[ner] case class Phrase(chars: String, entityTag: String, charOffset: Int)
 
-object NERService extends ProcessingService with FileAccess {
-  
-  val TASK_NER = TaskType("NER")
+object NERService extends ProcessingService {
 
   private lazy val props = new Properties()
   props.put("annotators", "tokenize, ssplit, pos, lemma, ner")
@@ -67,33 +66,13 @@ object NERService extends ProcessingService with FileAccess {
       }
     }
   }
-
-  /** Spawns a new background parse process.
-    *
-    * The function will throw an exception in case the user data directory
-    * for any of the fileparts does not exist. This should, however, never
-    * happen. If it does, something is seriously broken with the DB integrity.
-    */
-  override def spawnTask(document: DocumentRecord, parts: Seq[DocumentFilepartRecord])(implicit system: ActorSystem): Unit =
-    spawnTask(document, parts, getDocumentDir(document.getOwner, document.getId).get)
-
-  /** We're splitting this function, so we can inject alternative folders for testing **/
-  private[ner] def spawnTask(document: DocumentRecord, parts: Seq[DocumentFilepartRecord], sourceFolder: File, keepalive: Duration = 10 minutes)(implicit system: ActorSystem): Unit = {
-    val actor = system.actorOf(Props(classOf[NERSupervisorActor], TASK_NER, document, parts, sourceFolder, keepalive), name = "ner_doc_" + document.getId)
-    actor ! ProcessingTaskMessages.Start
-  }
-
-  /** Queries the progress for a specific process **/
-  override def queryProgress(documentId: String, timeout: FiniteDuration = 10 seconds)(implicit context: ExecutionContext, system: ActorSystem) = {
-    ProcessingTaskSupervisor.getSupervisorActor(TASK_NER, documentId) match {
-      case Some(actor) => {
-        implicit val t = Timeout(timeout)
-        (actor ? ProcessingTaskMessages.QueryProgress).mapTo[ProcessingTaskMessages.DocumentProgress].map(Some(_))
-      }
-
-      case None =>
-        Future.successful(None)
-    }
-  }
+  
+  override val serviceDescription = ProcessingServiceDescription(ServiceType.NER, "stanford-core-nlp", "Named-Entity-Recognition using Stanford CoreNLP library")
+    
+  override def actorClass[T <: BaseSupervisorActor]: ClassTag[T] = ClassTag(classOf[NERSupervisorActor])
+  
+  override val supportedContentTypes: Set[ContentType] = Set(ContentType.TEXT_PLAIN)
+  
+  override val isAnnotationService = true
 
 }

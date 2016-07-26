@@ -10,6 +10,35 @@ import scala.io.Source
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{ Try, Success, Failure }
+import javax.inject.Inject
+import play.api.inject.ApplicationLifecycle
+import javax.inject.Singleton
+import scala.concurrent.Future
+import com.google.inject.AbstractModule
+
+/*
+trait ESHelper
+
+class ESHelperImpl @Inject() (lifecycle: ApplicationLifecycle) extends ESHelper {
+  
+  ES.start()
+  
+  lifecycle.addStopHook { () =>  
+    Future {
+      ES.stop()
+    }
+  }
+  
+}
+
+class ESModule extends AbstractModule {
+  
+  override def configure() = {
+    bind(classOf[ESHelper]).to(classOf[ESHelperImpl]).asEagerSingleton()
+  }
+  
+}
+*/
 
 object ES {
   

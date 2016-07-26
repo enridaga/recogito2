@@ -1,4 +1,4 @@
-package controllers.my.upload
+package controllers.my.upload.processing
 
 import java.util.UUID
 
@@ -12,7 +12,7 @@ private[upload] object ProcessingTaskMessages {
 
   case class WorkerProgress(filepartId: UUID, status: ProgressStatus.Value, progress: Double)
 
-  case class DocumentProgress(documentId: String, task: TaskType, progress: Seq[WorkerProgress]) extends Message
+  case class DocumentProgress(documentId: String, service: ServiceType, progress: Seq[WorkerProgress]) extends Message
 
   case object TimedOut extends Message
 

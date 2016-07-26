@@ -1,7 +1,7 @@
-package controllers.my.upload.ner
+package controllers.my.upload.processing.ner
 
 import akka.actor.Actor
-import controllers.my.upload.ProgressStatus
+import controllers.my.upload.processing.ProgressStatus
 import java.io.File
 import java.util.UUID
 import models.ContentType
@@ -24,7 +24,7 @@ private[ner] object NERWorkerActor {
 
 private[ner] class NERWorkerActor(document: DocumentRecord, part: DocumentFilepartRecord, documentDir: File) extends Actor {
 
-  import controllers.my.upload.ProcessingTaskMessages._
+  import controllers.my.upload.processing.ProcessingTaskMessages._
 
   var progress = 0.0
   var status = ProgressStatus.PENDING

@@ -3,9 +3,7 @@ package controllers.my.upload
 import akka.actor.ActorSystem
 import controllers.WebJarAssets
 import controllers.BaseAuthController
-import controllers.my.upload.ProcessingTaskMessages._
-import controllers.my.upload.ner.NERService
-import controllers.my.upload.tiling.TilingService
+import controllers.my.upload.processing._
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -28,6 +26,11 @@ import play.api.libs.functional.syntax._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.language.implicitConversions
 import storage.DB
+import controllers.my.upload.processing.ProcessingServiceRegistry
+import controllers.my.upload.processing.ner.NERService
+import controllers.my.upload.processing.tiling.TilingService
+import controllers.my.upload.processing.ProcessingTaskMessages.WorkerProgress
+import controllers.my.upload.processing.ProcessingTaskMessages.DocumentProgress
 
 case class UploadSuccess(contentType: String)
 
@@ -156,24 +159,18 @@ class UploadController @Inject() (implicit val cache: CacheApi, val db: DB, syst
         } else {
           // Pending upload + fileparts available - proceed
           UploadService.importPendingUpload(pendingUpload, fileparts).map { case (doc, docParts) => {
-            // We'll forward a list of the running processing tasks to the view, so it can show progress
-            val runningTasks = scala.collection.mutable.ListBuffer.empty[TaskType]
-
-            // Apply NER if requested
-            val applyNER = checkParamValue("apply-ner", "on")
-            if (applyNER) {
-              NERService.spawnTask(doc, docParts)
-              runningTasks.append(NERService.TASK_NER)
+            // 'Apply automatic annotation' flag (set by user)
+            val applyAutoAnnotation = checkParamValue("auto-annotation", "on")
+            
+            // Distinct content types in the document
+            val contentTypes = docParts.map(_.getContentType).distinct.flatMap(ContentType.withName(_)).toSet
+            
+            val services = ProcessingServiceRegistry.getServices(contentTypes, applyAutoAnnotation).map { service => 
+              service.spawnTask(doc, docParts)
+              service.serviceDescription
             }
 
-            // Tile images
-            val imageParts = docParts.filter(_.getContentType.equals(ContentType.IMAGE_UPLOAD.toString))
-            if (imageParts.size > 0) {
-              TilingService.spawnTask(doc, imageParts)
-              runningTasks.append(TilingService.TASK_TILING)
-            }
-
-            Ok(views.html.my.upload.step3(usernameInPath, doc, docParts, runningTasks))
+            Ok(views.html.my.upload.step3(usernameInPath, doc, docParts, services))
           }}
         }
 
@@ -236,8 +233,8 @@ object UploadController {
   implicit val progressStatusValueWrites: Writes[ProgressStatus.Value] =
     Writes[ProgressStatus.Value](status => JsString(status.toString))
 
-  implicit val taskTypeWrites: Writes[TaskType] =
-    Writes[TaskType](t => JsString(t.name))
+  implicit val taskTypeWrites: Writes[ServiceType] =
+    Writes[ServiceType](s => JsString(s.name))
 
   implicit val workerProgressWrites: Writes[WorkerProgress] = (
     (JsPath \ "filepart_id").write[UUID] and
@@ -247,7 +244,7 @@ object UploadController {
 
   implicit val documentProgressWrites: Writes[DocumentProgress] = (
     (JsPath \ "document_id").write[String] and
-    (JsPath \ "task_name").write[TaskType] and
+    (JsPath \ "task_name").write[ServiceType] and
     (JsPath \ "progress").write[Seq[WorkerProgress]]
   )(unlift(DocumentProgress.unapply))
 

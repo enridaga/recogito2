@@ -1,4 +1,4 @@
-package controllers.my.upload.ner
+package controllers.my.upload.processing.ner
 
 import org.specs2.mutable._
 import org.specs2.runner._
@@ -14,11 +14,11 @@ import scala.io.Source
 class NERServiceSpec extends Specification {
 
   val TEST_TEXT = 
-    Source.fromFile("test/resources/controllers/my/upload/ner/text-for-ner-01.txt").getLines().mkString("\n")
+    Source.fromFile("test/resources/controllers/my/upload/processing/ner/text-for-ner-01.txt").getLines().mkString("\n")
   
   "The NER parse function" should {
     
-    val entities =  Await.result(NERService.parse(TEST_TEXT), 10 seconds)
+    val entities =  Await.result(NERService.parse(TEST_TEXT), 30 seconds)
     
     "detect 11 Named Entites in the test text" in {
       entities.size must equalTo (11)

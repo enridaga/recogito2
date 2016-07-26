@@ -1,4 +1,4 @@
-package controllers.my.upload.tiling
+package controllers.my.upload.processing.tiling
 
 import java.io.File
 import org.apache.commons.io.FileUtils
@@ -14,10 +14,10 @@ import scala.concurrent.duration._
 @RunWith(classOf[JUnitRunner])
 class TilingServiceSpec extends Specification {
   
-  val TEST_IMAGE = new File("test/resources/controllers/my/upload/tiling/Ptolemy_map_15th_century.jpg")
+  val TEST_IMAGE = new File("test/resources/controllers/my/upload/processing/tiling/Ptolemy_map_15th_century.jpg")
   
   val TMP_DIR = {
-    val dir = new File("test/resources/controllers/my/upload/tiling/tmp")
+    val dir = new File("test/resources/controllers/my/upload/processing/tiling/tmp")
     if (dir.exists)
       FileUtils.deleteDirectory(dir)
     dir
