@@ -25,7 +25,13 @@ case class Annotation(
 
   bodies: Seq[AnnotationBody]
 
-)
+) {
+  
+  /** Shorthand **/
+  lazy val getQuote: Option[String] = 
+    bodies.filter(_.hasType == AnnotationBody.QUOTE).headOption.flatMap(_.value)
+  
+}
 
 case class AnnotatedObject(documentId: String, filepartId: UUID, contentType: ContentType)
 

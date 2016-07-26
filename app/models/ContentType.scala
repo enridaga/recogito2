@@ -52,6 +52,10 @@ object ContentType {
       case "txt" =>
         Right(TEXT_PLAIN)
 
+        
+      case "csv" =>
+        Right(DATA_CSV)
+        
       case "jpg" | "tif" | "png" =>
         if (VIPS_INSTALLED) Right(IMAGE_UPLOAD) else Left(UnsupportedContentType)
 

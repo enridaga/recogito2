@@ -17,6 +17,7 @@ libraryDependencies ++= Seq(
   jdbc,
   cache,
 
+  "com.github.tototoshi" %% "scala-csv" % "1.3.3",
   "com.sksamuel.elastic4s" %% "elastic4s-streams" % "1.7.6",
   "com.typesafe.akka" %% "akka-contrib" % "2.4.2",
   "com.typesafe.akka" %% "akka-slf4j" % "2.4.2",
