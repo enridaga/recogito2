@@ -1,4 +1,8 @@
-define(['common/config', 'common/hasEvents'], function(Config, HasEvents) {
+define([
+  'common/config',
+  'common/hasEvents',
+  'document/annotation/image/iiif/iiifSource'
+], function(Config, HasEvents, IIIFSource) {
 
   var FULLSCREEN_SLIDE_DURATION = 200;
 
@@ -37,16 +41,38 @@ define(['common/config', 'common/hasEvents'], function(Config, HasEvents) {
             '<div class="fullscreen control icon">&#xf065;</div>' +
           '</div>'),
 
+        // projection = new ol.proj.Projection({
+        //   code: 'ZOOMIFY',
+        //   units: 'pixels',
+        //   extent: [0, 0, w, h]
+        // }),
+
+        // tileSource = new ol.source.Zoomify({
+        //  url: BASE_URL,
+        //  size: [ w, h ]
+        // }),
+
         projection = new ol.proj.Projection({
-          code: 'ZOOMIFY',
+          code: 'IIIF',
           units: 'pixels',
-          extent: [0, 0, w, h]
+          extent: [0, -h, w, 0]
         }),
 
-        tileSource = new ol.source.Zoomify({
-          url: BASE_URL,
-          size: [ w, h ]
+        /** For testing ONLY **/
+
+        tileSource = new IIIFSource({
+          baseUrl: 'http://ec2-52-10-34-39.us-west-2.compute.amazonaws.com/huntington/2367', //'http://demo.iiifhosting.com/iiif/demo', //BASE_URL,
+          width: 4000,
+          height: 3600,
+          resolutions:  [ 1, 2, 4, 8, 16 ], // 2, 4, 8, 16 ],
+          extension: 'jpg',
+          tileSize: 256,
+          projection: projection
+          // crossOrigin: goog.isString(this.crossOrigin_) ? this.crossOrigin_ :
+          //       (this.useWebGL_ ? '' : undefined)
         }),
+
+        /** For testing ONLY **/
 
         tileLayer = new ol.layer.Tile({ source: tileSource }),
 
