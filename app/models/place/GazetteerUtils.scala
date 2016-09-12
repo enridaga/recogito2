@@ -94,7 +94,7 @@ object GazetteerUtils {
   def importRDFStream(file: File, filename: String, placeService: PlaceService)(implicit context: ExecutionContext): Unit = {
     val gazetteerName = filename.substring(0, filename.indexOf('.'))
     val stream = getStream(file, filename)
-      
+    
     def placeHandler(p: org.pelagios.api.gazetteer.Place) = {
       Await.result(placeService.importRecord(toRecord(p, gazetteerName)), 10.seconds)
     }
