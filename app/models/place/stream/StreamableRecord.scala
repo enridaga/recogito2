@@ -32,13 +32,13 @@ case class StreamableRecord(
   
   description: Option[String],
   
-  modernCountry: Option[String],
+  modernCountry: Option[String]
   
   // geometry: Option[Geometry],
   
   // names: Option[Seq[NameRecord]],
   
-  placeTypes: Seq[String]
+  // placeTypes: Seq[String]
   
 )
 
@@ -53,9 +53,9 @@ object StreamableRecord {
     (JsPath \ "bbox").read[BBox] and
     (JsPath \ "repr_point").readNullable[Coordinate] and
     (JsPath \ "description").readNullable[String] and
-    (JsPath \ "country_modern").readNullable[String] and
+    (JsPath \ "country_modern").readNullable[String]
     // (JsPath \ "names").readNullable[Seq[NameRecord]] and
-    (JsPath \ "place_types").read[Seq[String]]
+    // (JsPath \ "place_types").read[Seq[String]]
   )(StreamableRecord.apply _)
   
 }

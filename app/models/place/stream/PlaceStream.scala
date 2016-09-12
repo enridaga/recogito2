@@ -11,6 +11,7 @@ import play.api.libs.json.Json
 class PlaceStream @Inject() (implicit materializer: Materializer, ctx: ExecutionContext) {
   
   def jsonToPlaces(stream: InputStream) = {
+    
     val source = StreamConverters.fromInputStream(() => stream, 5)
       .via(Framing.delimiter(ByteString("\n"), maximumFrameLength = Int.MaxValue, allowTruncation = false))
       .map(_.utf8String)
@@ -22,7 +23,7 @@ class PlaceStream @Inject() (implicit materializer: Materializer, ctx: Execution
     val batchStream = jsonParser.grouped(200)
     
     val batchImporter = Sink.foreach[Seq[StreamableRecord]] { records =>
-      play.api.Logger.info("batch!")
+      // TODO implement
     }
     
     val graph = RunnableGraph.fromGraph(GraphDSL.create() { implicit builder =>
